@@ -66,21 +66,8 @@ input, select { font-family: inherit; }
 /* ===== View Transitions ===== */
 .view-container { min-height: 100vh; }
 
-.page-content {
-  position: relative;
-}
-
-.page-content > .page-view.ng-enter {
-  animation: pageEnter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.page-content > .page-view.ng-leave {
-  animation: pageLeave 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  pointer-events: none;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+.page-content > .page-view {
+  animation: pageEnter 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .view-container > .view-animate.ng-enter {
