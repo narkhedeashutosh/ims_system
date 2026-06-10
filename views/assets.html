@@ -1,0 +1,243 @@
+<div class="page-view">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Asset Master</h1>
+      <p class="page-subtitle">{{ filtered.length }} of {{ assets.length }} assets</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-secondary">⬇ Export</button>
+      <button class="btn btn-accent">+ Add Asset</button>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <div class="filter-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search by name or ID..." ng-model="search" ng-change="filter()">
+    </div>
+    <select class="filter-select" ng-model="statusFilter" ng-change="filter()">
+      <option value="">All Statuses</option>
+      <option ng-repeat="s in statuses" value="{{ s }}">{{ s }}</option>
+    </select>
+    <select class="filter-select" ng-model="categoryFilter" ng-change="filter()">
+      <option value="">All Categories</option>
+      <option ng-repeat="c in categories" value="{{ c }}">{{ c }}</option>
+    </select>
+    <select class="filter-select" ng-model="brandFilter" ng-change="filter()">
+      <option value="">All Brands</option>
+      <option ng-repeat="b in brands" value="{{ b }}">{{ b }}</option>
+    </select>
+  </div>
+
+  <div class="card table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Asset ID</th>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Location</th>
+          <th>Status</th>
+          <th>Value</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="asset in filtered">
+          <td>{{ asset.id }}</td>
+          <td>
+            <div class="cell-primary">{{ asset.name }}</div>
+            <div class="cell-secondary">{{ asset.serial }}</div>
+          </td>
+          <td>{{ asset.category }}</td>
+          <td>{{ asset.location }}</td>
+          <td><span class="badge" ng-class="getBadgeClass(asset.status)">{{ asset.status }}</span></td>
+          <td>{{ formatValue(asset.value) }}</td>
+          <td>
+            <div class="td-actions">
+              <button class="action-icon action-view" title="View" ng-click="viewAsset(asset)">👁</button>
+              <button class="action-icon action-edit" title="Edit" ng-click="editAsset(asset)">✎</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Asset Modal (View / Edit) -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open" ng-click="closeModal()">
+  <div class="asset-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>{{ modal.asset.id }} — {{ modal.asset.name }}</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+
+    <div class="asset-modal-tabs">
+      <button class="asset-tab" ng-class="{ active: modal.tab === 'details' }" ng-click="setTab('details')">Details</button>
+      <button class="asset-tab" ng-class="{ active: modal.tab === 'warranty' }" ng-click="setTab('warranty')">Warranty</button>
+      <button class="asset-tab" ng-class="{ active: modal.tab === 'service' }" ng-click="setTab('service')">Service History</button>
+    </div>
+
+    <!-- Details Tab -->
+    <div class="asset-modal-body" ng-if="modal.tab === 'details'">
+      <div ng-if="modal.mode === 'view'" class="detail-grid">
+        <div class="detail-field"><span class="field-label">Asset Name</span><span class="field-value">{{ modal.form.name }}</span></div>
+        <div class="detail-field"><span class="field-label">Brand</span><span class="field-value">{{ modal.form.brand }}</span></div>
+        <div class="detail-field"><span class="field-label">Category</span><span class="field-value">{{ modal.form.category }}</span></div>
+        <div class="detail-field"><span class="field-label">Serial</span><span class="field-value">{{ modal.form.serial }}</span></div>
+        <div class="detail-field"><span class="field-label">Location</span><span class="field-value">{{ modal.form.location }}</span></div>
+        <div class="detail-field"><span class="field-label">Status</span><span class="field-value"><span class="badge" ng-class="getBadgeClass(modal.form.status)">{{ modal.form.status }}</span></span></div>
+        <div class="detail-field"><span class="field-label">Assigned To</span><span class="field-value">{{ modal.form.assignedTo }}</span></div>
+        <div class="detail-field"><span class="field-label">Value</span><span class="field-value">{{ formatValue(modal.form.value) }}</span></div>
+      </div>
+
+      <form ng-if="modal.mode === 'edit'" class="modal-form" ng-submit="saveDetails()">
+        <div class="form-row">
+          <div class="form-field">
+            <label>Asset Name</label>
+            <input type="text" ng-model="modal.form.name" required>
+          </div>
+          <div class="form-field">
+            <label>Brand</label>
+            <select ng-model="modal.form.brand">
+              <option ng-repeat="b in brands" value="{{ b }}">{{ b }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Location</label>
+            <select ng-model="modal.form.location">
+              <option ng-repeat="loc in locations" value="{{ loc }}">{{ loc }}</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Status</label>
+            <select ng-model="modal.form.status">
+              <option ng-repeat="s in statuses" value="{{ s }}">{{ s }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field full">
+            <label>Assigned To</label>
+            <input type="text" ng-model="modal.form.assignedTo">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-accent">Save Changes</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Warranty Tab -->
+    <div class="asset-modal-body" ng-if="modal.tab === 'warranty'">
+      <div class="warranty-notice" ng-if="modal.mode === 'view' && !hasWarranty()">
+        🛡 No warranty information recorded yet
+      </div>
+      <form class="modal-form" ng-submit="saveWarranty()" ng-if="modal.mode === 'edit' || hasWarranty()">
+        <div class="form-field full">
+          <label>Warranty Provider</label>
+          <input type="text" ng-model="modal.warranty.provider" ng-readonly="modal.mode === 'view'">
+        </div>
+        <div class="form-field full">
+          <label>Warranty Type</label>
+          <select ng-model="modal.warranty.type" ng-disabled="modal.mode === 'view'">
+            <option ng-repeat="t in warrantyTypes" value="{{ t }}">{{ t }}</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Warranty Start</label>
+            <input type="date" ng-model="modal.warranty.start" ng-readonly="modal.mode === 'view'">
+          </div>
+          <div class="form-field">
+            <label>Warranty End</label>
+            <input type="date" ng-model="modal.warranty.end" ng-readonly="modal.mode === 'view'">
+          </div>
+        </div>
+        <div class="form-field full">
+          <label>Warranty Notes</label>
+          <textarea ng-model="modal.warranty.notes" rows="3" ng-readonly="modal.mode === 'view'"></textarea>
+        </div>
+        <div class="modal-footer" ng-if="modal.mode === 'edit'">
+          <button type="submit" class="btn btn-accent">Save Warranty</button>
+        </div>
+      </form>
+      <div ng-if="modal.mode === 'view' && !hasWarranty()" class="modal-footer">
+        <button class="btn btn-outline" ng-click="modal.mode = 'edit'">Add Warranty</button>
+      </div>
+    </div>
+
+    <!-- Service History Tab -->
+    <div class="asset-modal-body" ng-if="modal.tab === 'service'">
+      <div class="service-toolbar">
+        <span class="service-count">{{ getServiceCount() }} service record{{ getServiceCount() !== 1 ? 's' : '' }}</span>
+        <button class="btn btn-outline btn-sm" ng-click="toggleAddRecord()">{{ modal.showAddRecord ? '− Close Form' : '+ Add Record' }}</button>
+      </div>
+
+      <div class="service-new-record card" ng-if="modal.showAddRecord">
+        <h4 class="service-new-title">New Service Record</h4>
+        <form class="modal-form service-add-form" ng-submit="saveRecord()" novalidate>
+          <div class="form-field full">
+            <label>Service Type</label>
+            <div class="select-wrapper">
+              <select ng-model="modal.newRecord.type" required>
+                <option ng-repeat="t in serviceTypes" value="{{ t }}">{{ t }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field full">
+            <label>Description</label>
+            <textarea ng-model="modal.newRecord.description" rows="3" placeholder="Describe the service performed..." required></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Technician</label>
+              <input type="text" ng-model="modal.newRecord.technician" placeholder="In-house / Name">
+            </div>
+            <div class="form-field">
+              <label>Vendor</label>
+              <input type="text" ng-model="modal.newRecord.vendor" placeholder="Service vendor name">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Cost (₹)</label>
+              <input type="number" ng-model="modal.newRecord.cost" min="0" step="1" placeholder="0">
+            </div>
+            <div class="form-field">
+              <label>Next Due</label>
+              <div class="date-wrapper">
+                <input type="date" ng-model="modal.newRecord.nextDue">
+                <span class="date-icon">📅</span>
+              </div>
+            </div>
+          </div>
+          <div class="service-form-actions">
+            <button type="submit" class="btn-save-record" ng-disabled="!isRecordValid()">Save Record</button>
+            <button type="button" class="btn-cancel-record" ng-click="cancelAddRecord()">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="service-records">
+        <div class="service-record card" ng-repeat="record in modal.asset.serviceHistory">
+          <div class="service-record-header">
+            <span class="service-type">📋 {{ record.type }}</span>
+            <span class="service-date">{{ record.date }}</span>
+          </div>
+          <p class="service-desc">{{ record.description }}</p>
+          <div class="service-meta">
+            <span>Technician: <strong>{{ record.technician }}</strong></span>
+            <span>Vendor: <strong>{{ record.vendor }}</strong></span>
+            <span>Cost: <strong>{{ formatValue(record.cost) }}</strong></span>
+            <span ng-if="record.nextDue">Next Due: <strong class="next-due">{{ record.nextDue }}</strong></span>
+          </div>
+        </div>
+        <p class="empty-service" ng-if="getServiceCount() === 0 && !modal.showAddRecord">No service records yet.</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,157 @@
+<div class="page-view">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Inventory &amp; Stock</h1>
+      <p class="page-subtitle">{{ stats.totalItems }} items — {{ stats.lowStock }} low stock alert{{ stats.lowStock !== 1 ? 's' : '' }}</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-accent">+ Add Item</button>
+    </div>
+  </div>
+
+  <div class="filters-bar stock-filters">
+    <div class="filter-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search items or SKU..." ng-model="search" ng-change="filter()">
+    </div>
+    <label class="low-stock-check">
+      <input type="checkbox" ng-model="lowStockOnly" ng-change="filter()">
+      <span>Low stock only</span>
+    </label>
+  </div>
+
+  <div class="dash-stats-row stock-stats-row">
+    <div class="dash-stat-card card yellow">
+      <span class="stat-label">Total Items</span>
+      <span class="stat-value">{{ stats.totalItems }}</span>
+    </div>
+    <div class="dash-stat-card card red">
+      <span class="stat-label">Low Stock</span>
+      <span class="stat-value">{{ stats.lowStock }}</span>
+      <span class="stat-hint" ng-if="stats.lowStock > 0">reorder needed</span>
+    </div>
+    <div class="dash-stat-card card teal">
+      <span class="stat-label">Total Value</span>
+      <span class="stat-value" style="font-size:22px">{{ formatValue(stats.totalValue) }}</span>
+    </div>
+  </div>
+
+  <div class="card table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>SKU</th>
+          <th>Item Name</th>
+          <th>Qty</th>
+          <th>Reorder</th>
+          <th>Location</th>
+          <th>Unit Cost</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="item in filtered">
+          <td>
+            <button class="action-icon action-view" title="View" ng-click="viewItem(item)">👁</button>
+          </td>
+          <td class="cell-secondary">{{ item.sku }}</td>
+          <td>
+            <div class="cell-primary">{{ item.item }}</div>
+            <div class="cell-secondary">{{ item.vendor }}</div>
+          </td>
+          <td><strong ng-class="getQtyClass(item)">{{ item.qty }}</strong></td>
+          <td>{{ item.reorder }}</td>
+          <td>{{ item.location }}</td>
+          <td>{{ formatValue(item.value) }}</td>
+          <td>
+            <button class="btn-adjust" ng-click="adjustItem(item)">Adjust</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Stock View Modal -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open && modal.mode === 'view'" ng-click="closeModal()">
+  <div class="stock-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>{{ modal.item.item }}</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+    <div class="stock-modal-body">
+      <div class="brand-detail-list">
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">SKU</span>
+          <span class="brand-detail-value">{{ modal.item.sku }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Item Name</span>
+          <span class="brand-detail-value">{{ modal.item.item }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Quantity</span>
+          <span class="brand-detail-value" ng-class="getQtyClass(modal.item)">{{ modal.item.qty }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Reorder Level</span>
+          <span class="brand-detail-value">{{ modal.item.reorder }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Location</span>
+          <span class="brand-detail-value">{{ modal.item.location }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Vendor</span>
+          <span class="brand-detail-value">{{ modal.item.vendor }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Unit Cost</span>
+          <span class="brand-detail-value">{{ formatValue(modal.item.value) }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Total Value</span>
+          <span class="brand-detail-value">{{ formatValue(getTotalValue(modal.item)) }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Stock Status</span>
+          <span class="brand-detail-value" ng-class="getStockStatusClass(modal.item)">{{ getStockStatus(modal.item) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stock Adjust Modal -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open && modal.mode === 'adjust'" ng-click="closeModal()">
+  <div class="stock-modal stock-adjust-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>Adjust Stock — {{ modal.item.item }}</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+    <div class="stock-modal-body">
+      <form class="modal-form" ng-submit="applyAdjustment()">
+        <div class="form-field full">
+          <label>Adjustment Type</label>
+          <div class="select-wrapper">
+            <select ng-model="modal.adjustType">
+              <option value="Add">Add</option>
+              <option value="Remove">Remove</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-field full">
+          <label>Quantity</label>
+          <input type="number" ng-model="modal.adjustQty" min="0" step="1" placeholder="0">
+        </div>
+        <p class="current-stock-info">
+          Current stock: <strong>{{ modal.item.qty }}</strong> units
+        </p>
+        <div class="modal-footer">
+          <button type="submit" class="btn-save-record" ng-disabled="!canApplyAdjustment()">Apply Adjustment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

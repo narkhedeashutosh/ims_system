@@ -1,0 +1,135 @@
+<div class="page-view">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Purchase Requests</h1>
+      <p class="page-subtitle">{{ requests.length }} requests</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-accent" ng-click="openNewRequest()">+ New Request</button>
+    </div>
+  </div>
+
+  <div class="card table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>PR ID</th>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>Vendor</th>
+          <th>Cost</th>
+          <th>Requested By</th>
+          <th>Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="r in requests">
+          <td>
+            <button class="action-icon action-view" title="View" ng-click="viewRequest(r)">👁</button>
+          </td>
+          <td>{{ r.id }}</td>
+          <td class="cell-primary">{{ r.item }}</td>
+          <td>{{ r.qty }}</td>
+          <td>{{ r.vendor }}</td>
+          <td>{{ formatCost(r.cost) }}</td>
+          <td>{{ r.requestedBy }}</td>
+          <td>{{ r.date }}</td>
+          <td><span class="badge" ng-class="getBadgeClass(r.status)">{{ r.status }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- View Request Modal -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open && modal.mode === 'view'" ng-click="closeModal()">
+  <div class="stock-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>PR — {{ modal.request.id }}</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+    <div class="stock-modal-body">
+      <div class="brand-detail-list">
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">PR ID</span>
+          <span class="brand-detail-value">{{ modal.request.id }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Item</span>
+          <span class="brand-detail-value">{{ modal.request.item }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Quantity</span>
+          <span class="brand-detail-value">{{ modal.request.qty }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Vendor</span>
+          <span class="brand-detail-value">{{ modal.request.vendor }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Estimated Cost</span>
+          <span class="brand-detail-value">{{ formatCost(modal.request.cost) }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Requested By</span>
+          <span class="brand-detail-value">{{ modal.request.requestedBy }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Date</span>
+          <span class="brand-detail-value">{{ modal.request.date }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Status</span>
+          <span class="brand-detail-value">
+            <span class="badge" ng-class="getBadgeClass(modal.request.status)">{{ modal.request.status }}</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New Request Modal -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open && modal.mode === 'new'" ng-click="closeModal()">
+  <div class="stock-modal stock-txn-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>New Purchase Request</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+    <div class="stock-modal-body">
+      <form class="modal-form" ng-submit="submitRequest()">
+        <div class="form-field full">
+          <label>Item / Equipment Name</label>
+          <input type="text" ng-model="modal.form.item" placeholder="Sony NP-FZ100 Battery Pack" required>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Quantity</label>
+            <input type="number" ng-model="modal.form.qty" min="1" placeholder="1" required>
+          </div>
+          <div class="form-field">
+            <label>Estimated Cost (₹)</label>
+            <input type="number" ng-model="modal.form.cost" min="1" placeholder="0" required>
+          </div>
+        </div>
+        <div class="form-field full">
+          <label>Preferred Vendor</label>
+          <div class="select-wrapper">
+            <select ng-model="modal.form.vendor" required>
+              <option ng-repeat="v in vendors" value="{{ v.name }}">{{ v.name }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-field full">
+          <label>Requested By</label>
+          <input type="text" ng-model="modal.form.requestedBy" placeholder="Your name" required>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-accent" ng-disabled="!canSubmitRequest()">Submit Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,182 @@
+<div class="page-view bookings-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Bookings</h1>
+      <p class="page-subtitle">{{ filtered.length }} of {{ bookings.length }} bookings</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-accent" ng-click="openNewBooking()">+ New Booking</button>
+    </div>
+  </div>
+
+  <div class="filters-bar bookings-toolbar">
+    <div class="filter-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search production..." ng-model="search" ng-change="filter()">
+    </div>
+    <select class="filter-select" ng-model="statusFilter" ng-change="filter()">
+      <option value="">All</option>
+      <option ng-repeat="s in statuses" value="{{ s }}">{{ s }}</option>
+    </select>
+    <div class="view-toggle">
+      <button ng-class="{ active: viewMode === 'list' }" ng-click="viewMode = 'list'">List</button>
+      <button ng-class="{ active: viewMode === 'gantt' }" ng-click="viewMode = 'gantt'">Gantt</button>
+    </div>
+  </div>
+
+  <!-- Gantt View -->
+  <div class="card gantt-card" ng-if="viewMode === 'gantt'">
+    <div class="gantt-wrap">
+      <div class="gantt-header-row">
+        <div class="gantt-label-col">Production</div>
+        <div class="gantt-timeline-header">
+          <div class="gantt-day-col" ng-repeat="day in ganttDays" ng-class="{ 'gantt-today': day.isToday }">
+            <span class="gantt-day-num">{{ day.dayNum }}</span>
+            <span class="gantt-day-month">{{ day.month }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="gantt-body">
+        <div class="gantt-row" ng-repeat="b in filtered">
+          <div class="gantt-label-col">
+            <div class="gantt-prod-name">{{ b.production }}</div>
+            <div class="gantt-prod-meta">{{ b.id }} · {{ b.team }}</div>
+            <span class="badge gantt-status-badge" ng-class="getBadgeClass(b.status)">{{ b.status }}</span>
+          </div>
+          <div class="gantt-timeline-row">
+            <div class="gantt-grid">
+              <div class="gantt-grid-cell" ng-repeat="day in ganttDays" ng-class="{ 'gantt-today': day.isToday }"></div>
+            </div>
+            <div class="gantt-bar-track">
+              <div class="gantt-bar" ng-class="getBarClass(b.status)" ng-style="getBarStyle(b)">
+                <span ng-if="b.assets > 1">{{ b.assets }} assets</span>
+                <span ng-if="b.assets <= 1">{{ b.assets }}…</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="gantt-legend">
+      <span class="gantt-legend-item"><span class="legend-dot gantt-bar-pending"></span> Pending</span>
+      <span class="gantt-legend-item"><span class="legend-dot gantt-bar-approved"></span> Approved</span>
+      <span class="gantt-legend-item"><span class="legend-dot gantt-bar-active"></span> Active</span>
+      <span class="gantt-legend-item"><span class="legend-dot gantt-bar-rejected"></span> Rejected</span>
+      <span class="gantt-legend-item"><span class="legend-dot gantt-bar-returned"></span> Returned</span>
+    </div>
+  </div>
+
+  <!-- List View -->
+  <div class="card table-card" ng-if="viewMode === 'list'">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Booking ID</th>
+          <th>Production</th>
+          <th>Team</th>
+          <th>Assets</th>
+          <th>Period</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="b in filtered">
+          <td>{{ b.id }}</td>
+          <td>
+            <div class="cell-primary">{{ b.production }}</div>
+            <div class="cell-secondary">By {{ b.by }}</div>
+          </td>
+          <td>{{ b.team }}</td>
+          <td>{{ b.assets }}</td>
+          <td>
+            <div class="cell-secondary">{{ b.start }}</div>
+            <div class="cell-secondary">→ {{ b.end }}</div>
+          </td>
+          <td><span class="badge" ng-class="getBadgeClass(b.status)">{{ b.status }}</span></td>
+          <td>
+            <div class="td-actions">
+              <button class="action-icon" title="Approve">✓</button>
+              <button class="action-icon" title="Reject">⚠</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Create Booking Modal -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open" ng-click="closeModal()">
+  <div class="booking-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>Create Booking Request</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+    <div class="booking-modal-body">
+      <form class="modal-form" ng-submit="submitBooking()">
+        <div class="form-field full">
+          <label>Production Name</label>
+          <input type="text" ng-model="modal.form.production" placeholder="e.g. Morning News Live" required>
+        </div>
+        <div class="form-field full">
+          <label>Team / Department</label>
+          <div class="select-wrapper">
+            <select ng-model="modal.form.team" required>
+              <option value="">— Select department —</option>
+              <option ng-repeat="d in departments" value="{{ d }}">{{ d }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>From (Date &amp; Time)</label>
+            <input type="datetime-local" ng-model="modal.form.from" ng-change="onDatesChange()" required>
+          </div>
+          <div class="form-field">
+            <label>To (Date &amp; Time)</label>
+            <input type="datetime-local" ng-model="modal.form.to" ng-change="onDatesChange()" required>
+          </div>
+        </div>
+        <div class="form-field full">
+          <label>Assets</label>
+          <div class="assets-picker" ng-if="!modal.form.from || !modal.form.to">
+            <p class="assets-hint">Select "From" and "To" dates first to see available assets.</p>
+          </div>
+          <div class="assets-picker" ng-if="modal.form.from && modal.form.to">
+            <label class="asset-check" ng-repeat="a in modal.availableAssets">
+              <input type="checkbox" ng-checked="isAssetSelected(a.id)" ng-click="toggleAsset(a.id)">
+              <span>{{ a.id }} — {{ a.name }}</span>
+            </label>
+            <p class="assets-hint" ng-if="modal.availableAssets.length === 0">No available assets for this period.</p>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Pickup Location</label>
+            <div class="select-wrapper">
+              <select ng-model="modal.form.pickup">
+                <option ng-repeat="loc in locations" value="{{ loc }}">{{ loc }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Return Location</label>
+            <div class="select-wrapper">
+              <select ng-model="modal.form.returnLoc">
+                <option ng-repeat="loc in locations" value="{{ loc }}">{{ loc }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="form-field full">
+          <label>Requested By</label>
+          <input type="text" ng-model="modal.form.requestedBy" placeholder="Your name" required>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-accent" ng-disabled="!canSubmitBooking()">Submit Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

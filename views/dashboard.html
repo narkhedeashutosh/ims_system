@@ -1,0 +1,85 @@
+<div class="page-view dashboard-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Live overview — Broadcast Asset Management System</p>
+    </div>
+  </div>
+
+  <div class="dash-stats-row">
+    <div class="dash-stat-card card" ng-class="stat.color" ng-repeat="stat in stats">
+      <span class="stat-label">{{ stat.label }}</span>
+      <span class="stat-value">{{ stat.value }}</span>
+      <span class="stat-hint">{{ stat.hint }}</span>
+    </div>
+  </div>
+
+  <div class="dash-charts-row">
+    <div class="card dash-chart-card dash-chart-wide">
+      <div class="dash-card-header">
+        <h3>Bookings &amp; Movements — 6 Months</h3>
+      </div>
+      <div class="chart-container dash-area-chart">
+        <canvas kk-chart="getBookingsChart()"></canvas>
+      </div>
+    </div>
+    <div class="card dash-chart-card">
+      <div class="dash-card-header">
+        <h3>Fleet Status</h3>
+      </div>
+      <div class="fleet-chart-wrap">
+        <ul class="fleet-legend">
+          <li ng-repeat="item in fleetLegend">
+            <span class="fleet-dot" ng-style="{ background: item.color }"></span>
+            <span class="fleet-label">{{ item.label }}</span>
+            <span class="fleet-count">{{ item.value }}</span>
+          </li>
+        </ul>
+        <div class="chart-container fleet-donut-chart">
+          <canvas kk-chart="getFleetChart()"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dash-bottom-row">
+    <div class="card dash-panel">
+      <div class="dash-card-header">
+        <h3>Recent Movements</h3>
+        <a class="dash-view-all" ui-sref="app.stockInOut">View All →</a>
+      </div>
+      <table class="data-table dash-table">
+        <thead>
+          <tr>
+            <th>Asset</th>
+            <th>Route</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="m in movements">
+            <td class="cell-primary">{{ m.asset }}</td>
+            <td class="cell-secondary">{{ m.route }}</td>
+            <td><span class="badge" ng-class="getMovementBadge(m.status)">{{ m.status }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card dash-panel">
+      <div class="dash-card-header">
+        <h3>Maintenance Due</h3>
+        <a class="dash-view-all" ui-sref="app.tickets">View All →</a>
+      </div>
+      <ul class="maintenance-list">
+        <li ng-repeat="item in maintenanceDue">
+          <div class="maint-info">
+            <div class="maint-asset">{{ item.asset }}</div>
+            <div class="maint-issue">{{ item.issue }}</div>
+          </div>
+          <span class="badge" ng-class="getPriorityBadge(item.priority)">{{ item.priority }}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

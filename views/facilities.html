@@ -1,0 +1,34 @@
+<div class="page-view">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Studios & Locations</h1>
+      <p class="page-subtitle">All facilities managed by this system</p>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <div class="card facility-card" ng-repeat="f in facilities">
+      <div class="facility-header">
+        <div>
+          <div class="facility-name">🏢 {{ f.name }}</div>
+          <div class="facility-desc">{{ f.desc }}</div>
+        </div>
+        <span class="badge" ng-class="getStatusClass(f.status)">{{ f.status }}</span>
+      </div>
+      <div class="facility-details">
+        <div><span class="label">Area</span><br><span class="value">{{ f.area }}</span></div>
+        <div><span class="label">Assets</span><br><span class="value">{{ f.assets }}</span></div>
+        <div style="grid-column: span 2"><span class="label">Manager</span><br><span class="value">{{ f.manager }}</span></div>
+      </div>
+      <div>
+        <div class="occupancy-label">
+          <span>Occupancy</span>
+          <span>{{ f.occupancy }}%</span>
+        </div>
+        <div class="occupancy-bar">
+          <div class="occupancy-fill" ng-style="{ width: f.occupancy + '%' }"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

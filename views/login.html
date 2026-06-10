@@ -1,0 +1,44 @@
+<div class="login-page">
+  <button class="login-theme-toggle icon-btn" ng-click="toggleTheme()" title="Toggle theme">
+    {{ isDark ? '☀️' : '🌙' }}
+  </button>
+
+  <div class="login-page-inner view-animate">
+    <div class="login-brand">
+      <div class="login-logo">
+        <span class="logo-k">i</span>MS
+      </div>
+      <div class="brand-subtitle">Asset Management System</div>
+    </div>
+
+    <div class="login-card">
+      <h2>Sign in</h2>
+      <p class="login-hint">Enter your credentials to access the system.</p>
+
+      <form ng-submit="login()">
+        <div class="login-error" ng-if="error">{{ error }}</div>
+
+        <div class="form-group">
+          <label>Username</label>
+          <div class="input-wrapper">
+            <span class="input-icon">👤</span>
+            <input type="text" ng-model="credentials.username" placeholder="admin" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input ng-attr-type="{{ showPassword ? 'text' : 'password' }}" ng-model="credentials.password" placeholder="••••••••" required>
+            <button type="button" class="toggle-pw" ng-click="togglePassword()">{{ showPassword ? '🙈' : '👁' }}</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary">Sign In</button>
+      </form>
+    </div>
+
+    <div class="login-footer">© 2026 Asset and Inventory Management</div>
+  </div>
+</div>

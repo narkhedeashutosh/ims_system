@@ -1,0 +1,186 @@
+(function () {
+  'use strict';
+
+  angular.module('kodeKrunchApp')
+    .controller('AssetsController', ['$scope', 'DataService', 'SearchService', function ($scope, DataService, SearchService) {
+      $scope.assets = DataService.getAssets();
+      $scope.filtered = $scope.assets;
+      $scope.search = '';
+      $scope.statusFilter = '';
+      $scope.categoryFilter = '';
+      $scope.brandFilter = '';
+      $scope.brands = DataService.getAssetBrands();
+      $scope.locations = DataService.getAssetLocations();
+      $scope.statuses = ['Available', 'In Use', 'Allocated', 'Under Repair'];
+      $scope.warrantyTypes = ['Manufacturer', 'Extended', 'Third Party', 'None'];
+      $scope.serviceTypes = [
+        'Preventive Maintenance', 'Repair', 'Calibration', 'Cleaning', 'Inspection',
+        'Sensor Cleaning', 'Firmware Update', 'Parts Replacement', 'Annual Service'
+      ];
+
+      $scope.categories = [];
+      $scope.assets.forEach(function (a) {
+        if ($scope.categories.indexOf(a.category) === -1) $scope.categories.push(a.category);
+      });
+
+      $scope.modal = {
+        open: false,
+        mode: 'view',
+        tab: 'details',
+        asset: null,
+        form: {},
+        warranty: {},
+        showAddRecord: false,
+        newRecord: {}
+      };
+
+      function emptyRecord() {
+        return { type: 'Preventive Maintenance', description: '', technician: '', vendor: '', cost: '', nextDue: '' };
+      }
+
+      function copyAsset(asset) {
+        return {
+          name: asset.name,
+          brand: asset.brand || '',
+          location: asset.location,
+          status: asset.status,
+          assignedTo: asset.assignedTo || '—',
+          category: asset.category,
+          serial: asset.serial,
+          value: asset.value
+        };
+      }
+
+      function copyWarranty(asset) {
+        var w = asset.warranty || {};
+        return {
+          provider: w.provider || '',
+          type: w.type || 'Manufacturer',
+          start: w.start || '',
+          end: w.end || '',
+          notes: w.notes || ''
+        };
+      }
+
+      $scope.filter = function () {
+        $scope.filtered = $scope.assets.filter(function (a) {
+          var q = $scope.search.toLowerCase();
+          var matchSearch = !q ||
+            a.name.toLowerCase().indexOf(q) !== -1 ||
+            a.id.toLowerCase().indexOf(q) !== -1;
+          var matchStatus = !$scope.statusFilter || a.status === $scope.statusFilter;
+          var matchCat = !$scope.categoryFilter || a.category === $scope.categoryFilter;
+          var matchBrand = !$scope.brandFilter || a.brand === $scope.brandFilter;
+          return matchSearch && matchStatus && matchCat && matchBrand;
+        });
+      };
+
+      var pendingAssetSearch = SearchService.consumePending('app.assets');
+      if (pendingAssetSearch) {
+        $scope.search = pendingAssetSearch;
+        $scope.filter();
+      }
+
+      $scope.getBadgeClass = function (status) {
+        return 'badge-' + status.toLowerCase().replace(/\s+/g, '-');
+      };
+
+      $scope.formatValue = function (v) {
+        return '₹' + v.toLocaleString('en-IN');
+      };
+
+      $scope.viewAsset = function (asset) {
+        $scope.modal.open = true;
+        $scope.modal.mode = 'view';
+        $scope.modal.tab = 'details';
+        $scope.modal.asset = asset;
+        $scope.modal.form = copyAsset(asset);
+        $scope.modal.warranty = copyWarranty(asset);
+        $scope.modal.showAddRecord = false;
+        $scope.modal.newRecord = emptyRecord();
+      };
+
+      $scope.editAsset = function (asset) {
+        $scope.modal.open = true;
+        $scope.modal.mode = 'edit';
+        $scope.modal.tab = 'details';
+        $scope.modal.asset = asset;
+        $scope.modal.form = copyAsset(asset);
+        $scope.modal.warranty = copyWarranty(asset);
+        $scope.modal.showAddRecord = false;
+        $scope.modal.newRecord = emptyRecord();
+      };
+
+      $scope.closeModal = function () {
+        $scope.modal.open = false;
+        $scope.modal.showAddRecord = false;
+      };
+
+      $scope.setTab = function (tab) {
+        $scope.modal.tab = tab;
+        $scope.modal.showAddRecord = false;
+      };
+
+      $scope.hasWarranty = function () {
+        var w = $scope.modal.warranty;
+        return !!(w.provider || w.start || w.end || w.notes);
+      };
+
+      $scope.getServiceCount = function () {
+        return ($scope.modal.asset && $scope.modal.asset.serviceHistory)
+          ? $scope.modal.asset.serviceHistory.length : 0;
+      };
+
+      $scope.toggleAddRecord = function () {
+        $scope.modal.showAddRecord = !$scope.modal.showAddRecord;
+        if ($scope.modal.showAddRecord) {
+          $scope.modal.newRecord = emptyRecord();
+        }
+      };
+
+      $scope.cancelAddRecord = function () {
+        $scope.modal.showAddRecord = false;
+        $scope.modal.newRecord = emptyRecord();
+      };
+
+      $scope.saveDetails = function () {
+        var asset = $scope.modal.asset;
+        var f = $scope.modal.form;
+        asset.name = f.name;
+        asset.brand = f.brand;
+        asset.location = f.location;
+        asset.status = f.status;
+        asset.assignedTo = f.assignedTo;
+        $scope.filter();
+      };
+
+      $scope.saveWarranty = function () {
+        $scope.modal.asset.warranty = angular.copy($scope.modal.warranty);
+      };
+
+      $scope.isRecordValid = function () {
+        var r = $scope.modal.newRecord;
+        return r && r.type && r.description && r.description.trim().length > 0;
+      };
+
+      $scope.formatNextDue = function (dateVal) {
+        if (!dateVal) return '';
+        var d = new Date(dateVal);
+        if (isNaN(d.getTime())) return dateVal;
+        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      };
+
+      $scope.saveRecord = function () {
+        if (!$scope.isRecordValid()) return;
+        var asset = $scope.modal.asset;
+        if (!asset.serviceHistory) asset.serviceHistory = [];
+        var r = angular.copy($scope.modal.newRecord);
+        r.date = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        r.cost = Number(r.cost) || 0;
+        r.nextDue = $scope.formatNextDue(r.nextDue);
+        asset.serviceHistory.unshift(r);
+        $scope.modal.showAddRecord = false;
+        $scope.modal.newRecord = emptyRecord();
+      };
+    }]);
+})();

@@ -1,0 +1,86 @@
+<div class="page-view">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Current Allocations</h1>
+      <p class="page-subtitle">Equipment currently checked out or approved for use</p>
+    </div>
+  </div>
+
+  <div class="card table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Booking</th>
+          <th>Production</th>
+          <th>Assets</th>
+          <th>Due Return</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="a in allocations">
+          <td>
+            <button class="action-icon action-view" title="View" ng-click="viewAllocation(a)">👁</button>
+          </td>
+          <td>{{ a.id }}</td>
+          <td>
+            <div class="cell-primary">{{ a.production }}</div>
+            <div class="cell-secondary">{{ a.dept }} · By {{ a.by }}</div>
+          </td>
+          <td>{{ a.assets }}</td>
+          <td>{{ a.dueReturn }}</td>
+          <td><span class="badge" ng-class="getBadgeClass(a.status)">{{ a.status }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- View Allocation Modal -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open" ng-click="closeModal()">
+  <div class="stock-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>Allocation — {{ modal.allocation.id }}</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+    <div class="stock-modal-body">
+      <div class="brand-detail-list">
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Booking ID</span>
+          <span class="brand-detail-value">{{ modal.allocation.id }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Production</span>
+          <span class="brand-detail-value">{{ modal.allocation.production }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Team</span>
+          <span class="brand-detail-value">{{ modal.allocation.dept }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Requested By</span>
+          <span class="brand-detail-value">{{ modal.allocation.by }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Assets</span>
+          <span class="brand-detail-value">{{ modal.allocation.assets }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Due Return</span>
+          <span class="brand-detail-value">{{ modal.allocation.dueReturn }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Pickup</span>
+          <span class="brand-detail-value">{{ modal.allocation.pickup }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Status</span>
+          <span class="brand-detail-value">
+            <span class="badge" ng-class="getBadgeClass(modal.allocation.status)">{{ modal.allocation.status }}</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

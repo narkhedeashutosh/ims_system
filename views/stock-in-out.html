@@ -1,0 +1,144 @@
+<div class="page-view">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Stock In / Out</h1>
+      <p class="page-subtitle">Transaction log for all inventory movements</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-accent" ng-click="openNewTransaction()">+ New Transaction</button>
+    </div>
+  </div>
+
+  <div class="card table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>TXN ID</th>
+          <th>Item</th>
+          <th>Type</th>
+          <th>Qty</th>
+          <th>Handled By</th>
+          <th>Date</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="txn in transactions">
+          <td>
+            <button class="action-icon action-view" title="View" ng-click="viewTransaction(txn)">👁</button>
+          </td>
+          <td>{{ txn.id }}</td>
+          <td>
+            <div class="cell-primary">{{ txn.item }}</div>
+            <div class="cell-secondary">{{ txn.sku }}</div>
+          </td>
+          <td><span class="badge" ng-class="getBadgeClass(txn.type)">{{ txn.type }}</span></td>
+          <td><strong>{{ txn.qty }}</strong></td>
+          <td>{{ txn.issuedBy }}</td>
+          <td class="cell-secondary">{{ txn.date }}</td>
+          <td class="cell-secondary">{{ txn.note }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- View Transaction Modal -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open && modal.mode === 'view'" ng-click="closeModal()">
+  <div class="stock-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>{{ modal.transaction.id }} — {{ modal.transaction.type }}</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+    <div class="stock-modal-body">
+      <div class="brand-detail-list">
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">TXN ID</span>
+          <span class="brand-detail-value">{{ modal.transaction.id }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Item</span>
+          <span class="brand-detail-value">{{ modal.transaction.item }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">SKU</span>
+          <span class="brand-detail-value">{{ modal.transaction.sku }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Type</span>
+          <span class="brand-detail-value">
+            <span class="badge" ng-class="getBadgeClass(modal.transaction.type)">{{ modal.transaction.type }}</span>
+          </span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Quantity</span>
+          <span class="brand-detail-value">{{ modal.transaction.qty }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Handled By</span>
+          <span class="brand-detail-value">{{ modal.transaction.issuedBy }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Date</span>
+          <span class="brand-detail-value">{{ modal.transaction.date }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Note</span>
+          <span class="brand-detail-value">{{ modal.transaction.note || '—' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New Transaction Modal -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open && modal.mode === 'new'" ng-click="closeModal()">
+  <div class="stock-modal stock-txn-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>New Stock Transaction</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+    <div class="stock-modal-body">
+      <form class="modal-form" ng-submit="logTransaction()">
+        <div class="form-field full">
+          <label>Item SKU</label>
+          <div class="select-wrapper">
+            <select ng-model="modal.form.sku" required>
+              <option ng-repeat="s in stockItems" value="{{ s.sku }}">{{ s.sku }} — {{ s.item }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Transaction Type</label>
+            <div class="select-wrapper">
+              <select ng-model="modal.form.type" required>
+                <option ng-repeat="t in transactionTypes" value="{{ t }}">{{ t }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Quantity</label>
+            <input type="number" ng-model="modal.form.qty" min="1" step="1" placeholder="0" required>
+          </div>
+        </div>
+        <div class="form-field full">
+          <label>Handled By</label>
+          <input type="text" ng-model="modal.form.handledBy" placeholder="Staff name" required>
+        </div>
+        <div class="form-field full">
+          <label>Date</label>
+          <input type="text" ng-model="modal.form.date" placeholder="dd Mmm yyyy, hh:mm">
+        </div>
+        <div class="form-field full">
+          <label>Note</label>
+          <input type="text" ng-model="modal.form.note" placeholder="Reference or purpose">
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-accent" ng-disabled="!canLogTransaction()">Log Transaction</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

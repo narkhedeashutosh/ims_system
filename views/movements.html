@@ -1,0 +1,165 @@
+<div class="page-view">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Movement Register</h1>
+      <p class="page-subtitle">{{ filtered.length }} movements</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-accent" ng-click="openNewTransfer()">+ New Transfer</button>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <select class="filter-select" ng-model="statusFilter" ng-change="filter()">
+      <option value="">All</option>
+      <option ng-repeat="s in statuses" value="{{ s }}">{{ s }}</option>
+    </select>
+  </div>
+
+  <div class="card table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>ID</th>
+          <th>Asset</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Requested By</th>
+          <th>Dispatched</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="m in filtered">
+          <td>
+            <button class="action-icon action-view" title="View" ng-click="viewMovement(m)">👁</button>
+          </td>
+          <td>{{ m.id }}</td>
+          <td>
+            <div class="cell-primary">{{ m.asset }}</div>
+            <div class="cell-secondary">{{ m.assetId }}</div>
+          </td>
+          <td>{{ m.from }}</td>
+          <td>{{ m.to }}</td>
+          <td>{{ m.requestedBy }}</td>
+          <td>{{ m.dispatched }}</td>
+          <td><span class="badge" ng-class="getBadgeClass(m.status)">{{ m.status }}</span></td>
+          <td>
+            <button class="btn-return" ng-if="m.status === 'Out'" ng-click="returnMovement(m)">Return</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- View Movement Modal -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open && modal.mode === 'view'" ng-click="closeModal()">
+  <div class="stock-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>Movement — {{ modal.movement.id }}</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+    <div class="stock-modal-body">
+      <div class="brand-detail-list">
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Movement ID</span>
+          <span class="brand-detail-value">{{ modal.movement.id }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Asset</span>
+          <span class="brand-detail-value">{{ modal.movement.asset }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Asset ID</span>
+          <span class="brand-detail-value">{{ modal.movement.assetId }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">From</span>
+          <span class="brand-detail-value">{{ modal.movement.from }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">To</span>
+          <span class="brand-detail-value">{{ modal.movement.to }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Requested By</span>
+          <span class="brand-detail-value">{{ modal.movement.requestedBy }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Approved By</span>
+          <span class="brand-detail-value">{{ modal.movement.approvedBy }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Dispatched</span>
+          <span class="brand-detail-value">{{ modal.movement.dispatched }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Returned</span>
+          <span class="brand-detail-value">{{ modal.movement.returned || '—' }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Status</span>
+          <span class="brand-detail-value">
+            <span class="badge" ng-class="getBadgeClass(modal.movement.status)">{{ modal.movement.status }}</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New Transfer Modal -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open && modal.mode === 'new'" ng-click="closeModal()">
+  <div class="stock-modal stock-txn-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>New Transfer / Movement</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+    <div class="stock-modal-body">
+      <form class="modal-form" ng-submit="logMovement()">
+        <div class="form-field full">
+          <label>Asset</label>
+          <div class="select-wrapper">
+            <select ng-model="modal.form.assetId" required>
+              <option ng-repeat="a in assets" value="{{ a.id }}">{{ a.id }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>From Location</label>
+            <div class="select-wrapper">
+              <select ng-model="modal.form.from" required>
+                <option ng-repeat="loc in locations" value="{{ loc }}">{{ loc }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label>To Location</label>
+            <div class="select-wrapper">
+              <select ng-model="modal.form.to" required>
+                <option ng-repeat="loc in locations" value="{{ loc }}">{{ loc }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Requested By</label>
+            <input type="text" ng-model="modal.form.requestedBy" placeholder="Staff name" required>
+          </div>
+          <div class="form-field">
+            <label>Approved By</label>
+            <input type="text" ng-model="modal.form.approvedBy" placeholder="Manager name" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-accent" ng-disabled="!canLogMovement()">Log Movement</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

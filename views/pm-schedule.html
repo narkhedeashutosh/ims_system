@@ -1,0 +1,77 @@
+<div class="page-view">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Preventive Maintenance Schedule</h1>
+      <p class="page-subtitle">Planned service calendar for critical broadcast assets</p>
+    </div>
+  </div>
+
+  <div class="card table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Asset</th>
+          <th>PM Type</th>
+          <th>Frequency</th>
+          <th>Last Done</th>
+          <th>Next Due</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="item in schedule">
+          <td>
+            <button class="action-icon action-view" title="View" ng-click="viewItem(item)">👁</button>
+          </td>
+          <td>{{ item.asset }}</td>
+          <td>{{ item.pmType }}</td>
+          <td>{{ item.frequency }}</td>
+          <td>{{ item.lastDone }}</td>
+          <td>{{ item.nextDue }}</td>
+          <td><span class="badge" ng-class="getBadgeClass(item.status)">{{ item.status }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- View PM Schedule Modal -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open" ng-click="closeModal()">
+  <div class="stock-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>{{ modal.item.asset }}</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+    <div class="stock-modal-body">
+      <div class="brand-detail-list">
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Asset</span>
+          <span class="brand-detail-value">{{ modal.item.asset }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">PM Type</span>
+          <span class="brand-detail-value">{{ modal.item.pmType }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Frequency</span>
+          <span class="brand-detail-value">{{ modal.item.frequency }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Last Done</span>
+          <span class="brand-detail-value">{{ modal.item.lastDone }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Next Due</span>
+          <span class="brand-detail-value">{{ modal.item.nextDue }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Status</span>
+          <span class="brand-detail-value">
+            <span class="badge" ng-class="getBadgeClass(modal.item.status)">{{ modal.item.status }}</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,58 @@
+<div class="page-view">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Asset Categories</h1>
+      <p class="page-subtitle">Taxonomy of all broadcast equipment</p>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <div class="card category-card" ng-repeat="cat in categories" ng-click="viewCategory(cat)">
+      <div class="cat-icon">{{ cat.icon }}</div>
+      <h3>{{ cat.name }}</h3>
+      <p class="cat-desc">{{ cat.desc }}</p>
+      <div class="cat-footer">
+        <span>{{ cat.count }} assets</span>
+        <span class="cat-available">{{ cat.available }} available</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Category Detail Modal -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open" ng-click="closeModal()">
+  <div class="stock-modal category-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>{{ modal.category.icon }} {{ modal.category.name }}</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+    <div class="stock-modal-body">
+      <div class="brand-detail-list">
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Description</span>
+          <span class="brand-detail-value">{{ modal.category.desc }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Total Assets</span>
+          <span class="brand-detail-value">{{ modal.category.count }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Available</span>
+          <span class="brand-detail-value cat-available">{{ modal.category.available }}</span>
+        </div>
+      </div>
+
+      <h3 class="category-assets-title">Assets in this Category</h3>
+      <div class="category-assets-list" ng-if="modal.assets.length">
+        <div class="category-asset-row" ng-repeat="a in modal.assets">
+          <div>
+            <div class="cell-primary">{{ a.name }}</div>
+            <div class="cell-secondary">{{ a.id }} · {{ a.location }}</div>
+          </div>
+          <span class="badge" ng-class="getBadgeClass(a.status)">{{ a.status }}</span>
+        </div>
+      </div>
+      <p class="vendor-no-contracts" ng-if="!modal.assets.length">No assets registered in this category.</p>
+    </div>
+  </div>
+</div>

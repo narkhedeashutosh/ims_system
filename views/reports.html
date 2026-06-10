@@ -1,0 +1,39 @@
+<div class="page-view reports-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Reports & Analytics</h1>
+      <p class="page-subtitle">Management visibility — utilization, cost, and stock</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-outline" ng-click="exportPdf()">⬇ Export PDF</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab" ng-repeat="tab in tabs"
+            ng-class="{ active: activeTab === tab.id }"
+            ng-click="setTab(tab.id)">
+      {{ tab.label }}
+    </button>
+  </div>
+
+  <div class="tab-content" id="report-export-area">
+    <div class="stats-row reports-stats-row">
+      <div class="stat-card card" ng-class="card.color" ng-repeat="card in getStatCards()">
+        <span class="stat-label">{{ card.label }}</span>
+        <span class="stat-value" ng-style="card.label.indexOf('Value') !== -1 || card.label.indexOf('Cost') !== -1 ? { fontSize: '22px' } : {}">{{ card.value }}</span>
+      </div>
+    </div>
+
+    <div class="card chart-card">
+      <div class="chart-title">
+        {{ activeTab === 'utilization' ? 'Equipment Utilization (%)' :
+           activeTab === 'maintenance' ? 'Monthly Maintenance Cost' :
+           'Stock vs Reorder Level' }}
+      </div>
+      <div class="chart-container">
+        <canvas kk-chart="getChartConfig()"></canvas>
+      </div>
+    </div>
+  </div>
+</div>

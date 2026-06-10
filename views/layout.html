@@ -1,0 +1,74 @@
+<div class="app-layout view-animate" ng-click="closeDropdowns()">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">
+        <span class="logo-k">i</span>MS
+      </div>
+      <div class="brand-subtitle">Asset Management System</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section" ng-repeat="section in navSections">
+        <div class="nav-section-title">{{ section.title }}</div>
+        <a class="nav-item" ng-repeat="item in section.items"
+           ui-sref="{{ item.state }}"
+           ng-class="{ active: isActive(item.state) }">
+          <span class="nav-icon">{{ item.icon }}</span>
+          {{ item.label }}
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar">A</div>
+      <div class="user-info">
+        <div class="name">{{ user.name }}</div>
+        <div class="role">{{ user.role }}</div>
+      </div>
+      <button class="btn-logout" ng-click="logout()" title="Sign out">⏻</button>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <header class="top-header">
+      <div class="breadcrumb">{{ getBreadcrumb()[0] }} › <span>{{ getBreadcrumb()[1] }}</span></div>
+      <div class="header-search" ng-click="$event.stopPropagation()">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Quick search..." ng-model="globalSearch" ng-change="onGlobalSearch()" ng-focus="onSearchFocus()" ng-keydown="$event.keyCode === 13 && submitGlobalSearch($event)">
+        <div class="search-dropdown" ng-if="searchOpen && globalSearch.trim()">
+          <button type="button" class="search-result" ng-repeat="r in searchResults" ng-click="goToSearchResult(r)">
+            <span class="search-result-type">{{ r.type }}</span>
+            <span class="search-result-label">{{ r.label }}</span>
+            <span class="search-result-sub">{{ r.sublabel }}</span>
+          </button>
+          <p class="search-no-results" ng-if="!searchResults.length">No results for "{{ globalSearch }}"</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="live-badge"><span class="live-dot"></span> LIVE</div>
+        <div class="notif-wrap">
+          <button class="icon-btn" title="Notifications" ng-class="{ active: notifOpen }" ng-click="toggleNotifications($event)">
+            🔔
+            <span class="notif-badge" ng-if="notifications > 0">{{ notifications }}</span>
+          </button>
+          <div class="notif-dropdown" ng-if="notifOpen" ng-click="$event.stopPropagation()">
+            <div class="notif-dropdown-header">
+              <span>Notifications</span>
+              <button type="button" class="notif-mark-read" ng-if="notifications > 0" ng-click="markAllNotificationsRead($event)">Mark all read</button>
+            </div>
+            <div class="notif-list">
+              <button type="button" class="notif-item" ng-repeat="n in notificationItems" ng-class="{ unread: !n.read }" ng-click="markNotificationRead(n)">
+                <div class="notif-item-title">{{ n.title }}</div>
+                <div class="notif-item-message">{{ n.message }}</div>
+                <div class="notif-item-time">{{ n.time }}</div>
+              </button>
+            </div>
+          </div>
+        </div>
+        <button class="icon-btn" ng-click="toggleTheme()" title="Toggle theme">
+          {{ isDark ? '☀️' : '🌙' }}
+        </button>
+      </div>
+    </header>
+
+    <main class="page-content" ui-view=""></main>
+  </div>
+</div>

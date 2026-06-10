@@ -1,0 +1,142 @@
+<div class="page-view">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Vendors</h1>
+      <p class="page-subtitle">{{ filtered.length }} registered vendors</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-accent" ng-click="openAddVendor()">+ Add Vendor</button>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <div class="filter-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search vendors..." ng-model="search" ng-change="filter()">
+    </div>
+  </div>
+
+  <div class="cards-grid vendor-grid">
+    <div class="card vendor-card" ng-repeat="v in filtered">
+      <div class="vendor-header">
+        <span>🛒</span>
+        <span class="vendor-rating">{{ getStars(v.rating) }}</span>
+      </div>
+      <div class="vendor-name">{{ v.name }}</div>
+      <div class="vendor-category">{{ v.category }}</div>
+      <div class="vendor-contact">
+        {{ v.contact }}<br>
+        {{ v.email }}<br>
+        {{ v.phone }}
+      </div>
+      <div class="vendor-footer">
+        <span>{{ v.contracts }} active contract{{ v.contracts === 1 ? '' : 's' }}</span>
+        <button type="button" class="vendor-view-link" ng-click="viewVendor(v)">View →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Contracts Modal -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open && modal.mode === 'view'" ng-click="closeModal()">
+  <div class="vendor-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>{{ modal.vendor.name }}</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+    <div class="vendor-modal-body">
+      <div class="brand-detail-list vendor-detail-summary">
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Category</span>
+          <span class="brand-detail-value">{{ modal.vendor.category }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Contact</span>
+          <span class="brand-detail-value">{{ modal.vendor.contact }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Email</span>
+          <span class="brand-detail-value">{{ modal.vendor.email }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Phone</span>
+          <span class="brand-detail-value">{{ modal.vendor.phone }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Rating</span>
+          <span class="brand-detail-value vendor-rating">{{ getStars(modal.vendor.rating) }}</span>
+        </div>
+      </div>
+
+      <h3 class="vendor-contracts-title">Contract Details</h3>
+      <div class="vendor-contracts-table-wrap" ng-if="modal.vendor.contractList.length">
+        <table class="data-table vendor-contracts-table">
+          <thead>
+            <tr>
+              <th>Contract ID</th>
+              <th>Title</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Value</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="c in modal.vendor.contractList">
+              <td>{{ c.id }}</td>
+              <td>{{ c.title }}</td>
+              <td>{{ c.start }}</td>
+              <td>{{ c.end }}</td>
+              <td>{{ formatValue(c.value) }}</td>
+              <td><span class="badge" ng-class="getContractBadgeClass(c.status)">{{ c.status }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="vendor-no-contracts" ng-if="!modal.vendor.contractList.length">No contracts on record for this vendor.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Add Vendor Modal -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open && modal.mode === 'add'" ng-click="closeModal()">
+  <div class="vendor-modal vendor-add-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>Add New Vendor</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+    <div class="vendor-modal-body">
+      <form class="modal-form" ng-submit="addVendor()">
+        <div class="form-field full">
+          <label>Vendor Name</label>
+          <input type="text" ng-model="modal.form.name" placeholder="e.g. Sony India Ltd." required>
+        </div>
+        <div class="form-field full">
+          <label>Category</label>
+          <div class="select-wrapper">
+            <select ng-model="modal.form.category" required>
+              <option ng-repeat="cat in categories" value="{{ cat }}">{{ cat }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-field full">
+          <label>Contact Person</label>
+          <input type="text" ng-model="modal.form.contact" placeholder="Full name" required>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Email</label>
+            <input type="email" ng-model="modal.form.email" placeholder="email@vendor.com" required>
+          </div>
+          <div class="form-field">
+            <label>Phone</label>
+            <input type="text" ng-model="modal.form.phone" placeholder="+91 00 0000 0000" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-accent" ng-disabled="!canAddVendor()">Add Vendor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

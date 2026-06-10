@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="kodeKrunchApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iMS — Asset Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body ng-class="{'theme-dark': isDark}" ng-controller="RootController">
+  <div ui-view class="view-container"></div>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular-animate.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/1.0.30/angular-ui-router.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/data/mockData.js"></script>
+  <script src="js/services/themeService.js"></script>
+  <script src="js/services/authService.js"></script>
+  <script src="js/services/dataService.js"></script>
+  <script src="js/services/searchService.js"></script>
+  <script src="js/controllers/rootController.js"></script>
+  <script src="js/controllers/loginController.js"></script>
+  <script src="js/controllers/mainController.js"></script>
+  <script src="js/controllers/dashboardController.js"></script>
+  <script src="js/controllers/assetsController.js"></script>
+  <script src="js/controllers/categoriesController.js"></script>
+  <script src="js/controllers/brandMasterController.js"></script>
+  <script src="js/controllers/stockController.js"></script>
+  <script src="js/controllers/stockInOutController.js"></script>
+  <script src="js/controllers/bookingsController.js"></script>
+  <script src="js/controllers/allocationsController.js"></script>
+  <script src="js/controllers/movementsController.js"></script>
+  <script src="js/controllers/ticketsController.js"></script>
+  <script src="js/controllers/pmScheduleController.js"></script>
+  <script src="js/controllers/facilitiesController.js"></script>
+  <script src="js/controllers/vendorsController.js"></script>
+  <script src="js/controllers/purchaseRequestsController.js"></script>
+  <script src="js/controllers/usersController.js"></script>
+  <script src="js/controllers/reportsController.js"></script>
+  <script src="js/directives/chartDirective.js"></script>
+  <script src="js/directives/modalEscDirective.js"></script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<div class="page-view">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Users & Roles</h1>
+      <p class="page-subtitle">{{ filtered.length }} users</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-accent" ng-click="openAddUser()">+ Add User</button>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <div class="filter-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search users..." ng-model="search" ng-change="filter()">
+    </div>
+    <select class="filter-select" ng-model="roleFilter" ng-change="filter()">
+      <option value="">All Roles</option>
+      <option ng-repeat="r in roles" value="{{ r }}">{{ r }}</option>
+    </select>
+  </div>
+
+  <div class="card table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>User ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Department</th>
+          <th>Last Login</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="u in filtered">
+          <td>
+            <button class="action-icon action-view" title="View" ng-click="viewUser(u)">👁</button>
+          </td>
+          <td>{{ u.id }}</td>
+          <td>
+            <div class="name-cell">
+              <span class="table-avatar">{{ getInitials(u.name) }}</span>
+              <span class="cell-primary">{{ u.name }}</span>
+            </div>
+          </td>
+          <td>{{ u.email }}</td>
+          <td><span class="role-text">{{ u.role }}</span></td>
+          <td>{{ u.department }}</td>
+          <td class="cell-secondary">{{ u.lastLogin }}</td>
+          <td><span class="badge" ng-class="getStatusClass(u.status)">{{ u.status }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- View User Modal -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open && modal.mode === 'view'" ng-click="closeModal()">
+  <div class="stock-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>{{ modal.user.name }}</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+    <div class="stock-modal-body">
+      <div class="brand-detail-list">
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">User ID</span>
+          <span class="brand-detail-value">{{ modal.user.id }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Full Name</span>
+          <span class="brand-detail-value">{{ modal.user.name }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Email</span>
+          <span class="brand-detail-value">{{ modal.user.email }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Role</span>
+          <span class="brand-detail-value">{{ modal.user.role }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Department</span>
+          <span class="brand-detail-value">{{ modal.user.department }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Status</span>
+          <span class="brand-detail-value">
+            <span class="badge" ng-class="getStatusClass(modal.user.status)">{{ modal.user.status }}</span>
+          </span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Last Login</span>
+          <span class="brand-detail-value">{{ modal.user.lastLogin }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open && modal.mode === 'add'" ng-click="closeModal()">
+  <div class="stock-modal stock-txn-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>Add New User</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+    <div class="stock-modal-body">
+      <form class="modal-form" ng-submit="addUser()">
+        <div class="form-row">
+          <div class="form-field">
+            <label>Full Name</label>
+            <input type="text" ng-model="modal.form.name" required>
+          </div>
+          <div class="form-field">
+            <label>Email</label>
+            <input type="email" ng-model="modal.form.email" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Role</label>
+            <div class="select-wrapper">
+              <select ng-model="modal.form.role" required>
+                <option ng-repeat="r in roles" value="{{ r }}">{{ r }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Department</label>
+            <input type="text" ng-model="modal.form.department" placeholder="News, Production..." required>
+          </div>
+        </div>
+        <div class="form-field full">
+          <label>Status</label>
+          <div class="select-wrapper">
+            <select ng-model="modal.form.status" required>
+              <option ng-repeat="s in statuses" value="{{ s }}">{{ s }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-accent" ng-disabled="!canAddUser()">Add User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

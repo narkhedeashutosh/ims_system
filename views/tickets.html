@@ -1,0 +1,172 @@
+<div class="page-view" ng-click="closeStatusMenu()">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Maintenance Tickets</h1>
+      <p class="page-subtitle">{{ filtered.length }} tickets</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-accent" ng-click="openNewTicket()">+ New Ticket</button>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <select class="filter-select" ng-model="priorityFilter" ng-change="filter()">
+      <option value="">All</option>
+      <option ng-repeat="p in priorities" value="{{ p }}">{{ p }}</option>
+    </select>
+    <select class="filter-select" ng-model="statusFilter" ng-change="filter()">
+      <option value="">All</option>
+      <option ng-repeat="s in statuses" value="{{ s }}">{{ s }}</option>
+    </select>
+  </div>
+
+  <div class="card table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Ticket</th>
+          <th>Asset</th>
+          <th>Issue</th>
+          <th>Priority</th>
+          <th>Vendor</th>
+          <th>Est. Cost</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="t in filtered">
+          <td>
+            <button class="action-icon action-view" title="View" ng-click="viewTicket(t)">👁</button>
+          </td>
+          <td>{{ t.id }}</td>
+          <td>
+            <div class="cell-primary">{{ t.asset }}</div>
+            <div class="cell-secondary">{{ t.assetId }}</div>
+          </td>
+          <td class="cell-secondary ticket-issue-cell">{{ t.issue }}</td>
+          <td><span class="badge" ng-class="getBadgeClass(t.priority)">{{ t.priority }}</span></td>
+          <td>{{ t.vendor }}</td>
+          <td>{{ formatCost(t.cost) }}</td>
+          <td class="status-cell">
+            <div class="status-dropdown" ng-class="{'is-open': openStatusId === t.id}">
+              <button type="button" class="status-dropdown-trigger" ng-class="getStatusTriggerClass(t.status)" ng-click="toggleStatusMenu(t, $event)">
+                <span>{{ t.status }}</span>
+                <span class="status-chevron">▾</span>
+              </button>
+              <div class="status-dropdown-menu" ng-if="openStatusId === t.id" ng-click="$event.stopPropagation()">
+                <button type="button" class="status-dropdown-option" ng-repeat="s in statuses" ng-class="{'is-selected': t.status === s}" ng-click="setTicketStatus(t, s)">
+                  <span class="status-check" ng-if="t.status === s">✓</span>
+                  {{ s }}
+                </button>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- View Ticket Modal -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open && modal.mode === 'view'" ng-click="closeModal()">
+  <div class="stock-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>Ticket — {{ modal.ticket.id }}</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+    <div class="stock-modal-body">
+      <div class="brand-detail-list">
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Ticket ID</span>
+          <span class="brand-detail-value">{{ modal.ticket.id }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Asset</span>
+          <span class="brand-detail-value">{{ modal.ticket.asset }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Asset ID</span>
+          <span class="brand-detail-value">{{ modal.ticket.assetId }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Issue</span>
+          <span class="brand-detail-value">{{ modal.ticket.issue }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Priority</span>
+          <span class="brand-detail-value">
+            <span class="badge" ng-class="getBadgeClass(modal.ticket.priority)">{{ modal.ticket.priority }}</span>
+          </span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Status</span>
+          <span class="brand-detail-value">{{ modal.ticket.status }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Vendor</span>
+          <span class="brand-detail-value">{{ modal.ticket.vendor }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Raised</span>
+          <span class="brand-detail-value">{{ modal.ticket.raised }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Est. Completion</span>
+          <span class="brand-detail-value">{{ modal.ticket.estCompletion || '—' }}</span>
+        </div>
+        <div class="brand-detail-row">
+          <span class="brand-detail-label">Est. Cost</span>
+          <span class="brand-detail-value">{{ formatCost(modal.ticket.cost) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Ticket Modal -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open && modal.mode === 'new'" ng-click="closeModal()">
+  <div class="stock-modal stock-txn-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>Create Maintenance Ticket</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+    <div class="stock-modal-body">
+      <form class="modal-form" ng-submit="createTicket()">
+        <div class="form-field full">
+          <label>Asset</label>
+          <div class="select-wrapper">
+            <select ng-model="modal.form.assetId" required>
+              <option ng-repeat="a in assets" value="{{ a.id }}">{{ a.id }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-field full">
+          <label>Issue Description</label>
+          <textarea ng-model="modal.form.issue" rows="4" placeholder="Describe the issue..." required></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Priority</label>
+            <div class="select-wrapper">
+              <select ng-model="modal.form.priority" required>
+                <option ng-repeat="p in priorities" value="{{ p }}">{{ p }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Service Vendor</label>
+            <input type="text" ng-model="modal.form.vendor" placeholder="Vendor name" required>
+          </div>
+        </div>
+        <div class="form-field full">
+          <label>Estimated Cost (₹)</label>
+          <input type="number" ng-model="modal.form.cost" min="1" placeholder="0" required>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-accent" ng-disabled="!canCreateTicket()">Create Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
