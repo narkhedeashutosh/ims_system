@@ -6,7 +6,7 @@
     </div>
     <div class="page-actions">
       <button class="btn btn-secondary">⬇ Export</button>
-      <button class="btn btn-accent">+ Add Asset</button>
+      <button class="btn btn-accent" ng-click="openAddAsset()">+ Add Asset</button>
     </div>
   </div>
 
@@ -46,8 +46,16 @@
         <tr ng-repeat="asset in filtered">
           <td>{{ asset.id }}</td>
           <td>
-            <div class="cell-primary">{{ asset.name }}</div>
-            <div class="cell-secondary">{{ asset.serial }}</div>
+            <div class="asset-name-cell">
+              <div class="asset-thumb" ng-class="{ placeholder: !asset.imageUrl }">
+                <img ng-if="asset.imageUrl" ng-src="{{ asset.imageUrl }}" alt="">
+                <span ng-if="!asset.imageUrl">{{ getCategoryIcon(asset.category) }}</span>
+              </div>
+              <div>
+                <div class="cell-primary">{{ asset.name }}</div>
+                <div class="cell-secondary">{{ asset.serial }}</div>
+              </div>
+            </div>
           </td>
           <td>{{ asset.category }}</td>
           <td>{{ asset.location }}</td>
@@ -65,8 +73,94 @@
   </div>
 </div>
 
+<!-- Add Asset Modal -->
+<div class="modal-overlay" modal-esc-close ng-if="modal.open && modal.mode === 'add'" ng-click="closeModal()">
+  <div class="asset-modal asset-add-modal" ng-click="$event.stopPropagation()">
+    <div class="asset-modal-header">
+      <h2>Add New Asset</h2>
+      <button class="modal-close" ng-click="closeModal()">✕</button>
+    </div>
+    <div class="asset-modal-body">
+      <form class="modal-form" ng-submit="addAsset()">
+        <div class="asset-image-upload">
+          <div class="asset-image-preview" ng-class="{ empty: !modal.form.imageUrl }">
+            <img ng-if="modal.form.imageUrl" ng-src="{{ modal.form.imageUrl }}" alt="Asset preview">
+            <span ng-if="!modal.form.imageUrl" class="asset-image-placeholder">📷</span>
+          </div>
+          <div class="asset-image-actions">
+            <label class="btn btn-outline btn-sm asset-image-btn">
+              Upload Image
+              <input type="file" accept="image/*" class="asset-image-input" onchange="angular.element(this).scope().onImageSelected(this)">
+            </label>
+            <button type="button" class="btn btn-outline btn-sm" ng-if="modal.form.imageUrl" ng-click="clearImage()">Remove</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Asset Name</label>
+            <input type="text" ng-model="modal.form.name" placeholder="Sony FX9 Camera" required>
+          </div>
+          <div class="form-field">
+            <label>Brand</label>
+            <div class="select-wrapper">
+              <select ng-model="modal.form.brand" required>
+                <option ng-repeat="b in brands" value="{{ b }}">{{ b }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Model</label>
+            <input type="text" ng-model="modal.form.model" placeholder="e.g. FX9">
+          </div>
+          <div class="form-field">
+            <label>Serial Number</label>
+            <input type="text" ng-model="modal.form.serial" placeholder="SN-0000" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Category</label>
+            <div class="select-wrapper">
+              <select ng-model="modal.form.category" required>
+                <option ng-repeat="c in categoryNames" value="{{ c }}">{{ c }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Location</label>
+            <div class="select-wrapper">
+              <select ng-model="modal.form.location" required>
+                <option ng-repeat="loc in locations" value="{{ loc }}">{{ loc }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Status</label>
+            <div class="select-wrapper">
+              <select ng-model="modal.form.status" required>
+                <option ng-repeat="s in statuses" value="{{ s }}">{{ s }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Value (₹)</label>
+            <input type="number" ng-model="modal.form.value" min="0" step="1" placeholder="0" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-accent" ng-disabled="!canAddAsset()">Add Asset</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- Asset Modal (View / Edit) -->
-<div class="modal-overlay" modal-esc-close ng-if="modal.open" ng-click="closeModal()">
+<div class="modal-overlay" modal-esc-close ng-if="modal.open && modal.mode !== 'add'" ng-click="closeModal()">
   <div class="asset-modal" ng-click="$event.stopPropagation()">
     <div class="asset-modal-header">
       <h2>{{ modal.asset.id }} — {{ modal.asset.name }}</h2>
@@ -81,9 +175,23 @@
 
     <!-- Details Tab -->
     <div class="asset-modal-body" ng-if="modal.tab === 'details'">
+      <div class="asset-detail-image">
+        <div class="asset-image-preview" ng-class="{ empty: !modal.form.imageUrl }">
+          <img ng-if="modal.form.imageUrl" ng-src="{{ modal.form.imageUrl }}" alt="">
+          <span ng-if="!modal.form.imageUrl" class="asset-image-placeholder">{{ getCategoryIcon(modal.form.category) }}</span>
+        </div>
+        <div class="asset-image-actions" ng-if="modal.mode === 'edit'">
+          <label class="btn btn-outline btn-sm asset-image-btn">
+            Change Image
+            <input type="file" accept="image/*" class="asset-image-input" onchange="angular.element(this).scope().onEditImageSelected(this)">
+          </label>
+          <button type="button" class="btn btn-outline btn-sm" ng-if="modal.form.imageUrl" ng-click="modal.form.imageUrl = ''">Remove</button>
+        </div>
+      </div>
       <div ng-if="modal.mode === 'view'" class="detail-grid">
         <div class="detail-field"><span class="field-label">Asset Name</span><span class="field-value">{{ modal.form.name }}</span></div>
         <div class="detail-field"><span class="field-label">Brand</span><span class="field-value">{{ modal.form.brand }}</span></div>
+        <div class="detail-field"><span class="field-label">Model</span><span class="field-value">{{ modal.form.model || '—' }}</span></div>
         <div class="detail-field"><span class="field-label">Category</span><span class="field-value">{{ modal.form.category }}</span></div>
         <div class="detail-field"><span class="field-label">Serial</span><span class="field-value">{{ modal.form.serial }}</span></div>
         <div class="detail-field"><span class="field-label">Location</span><span class="field-value">{{ modal.form.location }}</span></div>
@@ -103,6 +211,16 @@
             <select ng-model="modal.form.brand">
               <option ng-repeat="b in brands" value="{{ b }}">{{ b }}</option>
             </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Model</label>
+            <input type="text" ng-model="modal.form.model">
+          </div>
+          <div class="form-field">
+            <label>Serial</label>
+            <input type="text" ng-model="modal.form.serial">
           </div>
         </div>
         <div class="form-row">

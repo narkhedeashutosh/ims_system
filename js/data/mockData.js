@@ -10,8 +10,9 @@
         'Zeiss', 'Sound Devices', 'Grass Valley', 'Ross'
       ],
       assetLocations: [
-        'Studio A', 'Studio B', 'Van 1', 'Warehouse', 'Service Center',
-        'OB Van 1', 'PCR Room', 'Edit Suite 1', 'Repair Bay', 'On Location'
+        'Studio A', 'Studio B', 'PCR Room', 'MCR Room', 'Warehouse',
+        'OB Bay', 'Server Room', 'Service Center', 'Van 1', 'OB Van 1',
+        'Edit Suite 1', 'Repair Bay', 'On Location'
       ],
       notifications: [
         { id: 'NTF-001', title: 'Low Stock Alert', message: 'Gaffer Tape is below reorder level — only 3 rolls left.', time: '2h ago', read: false },

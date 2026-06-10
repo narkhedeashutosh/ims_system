@@ -18,9 +18,15 @@
         'Sensor Cleaning', 'Firmware Update', 'Parts Replacement', 'Annual Service'
       ];
 
+      $scope.categoryNames = DataService.getCategories().map(function (c) { return c.name; });
       $scope.categories = [];
       $scope.assets.forEach(function (a) {
         if ($scope.categories.indexOf(a.category) === -1) $scope.categories.push(a.category);
+      });
+
+      var categoryIcons = {};
+      DataService.getCategories().forEach(function (c) {
+        categoryIcons[c.name] = c.icon;
       });
 
       $scope.modal = {
@@ -38,17 +44,53 @@
         return { type: 'Preventive Maintenance', description: '', technician: '', vendor: '', cost: '', nextDue: '' };
       }
 
+      function emptyAssetForm() {
+        return {
+          name: '',
+          brand: $scope.brands[0] || '',
+          model: '',
+          serial: '',
+          category: $scope.categoryNames[0] || '',
+          location: 'Warehouse',
+          status: 'Available',
+          value: 0,
+          imageUrl: ''
+        };
+      }
+
       function copyAsset(asset) {
         return {
           name: asset.name,
           brand: asset.brand || '',
+          model: asset.model || '',
           location: asset.location,
           status: asset.status,
           assignedTo: asset.assignedTo || '—',
           category: asset.category,
           serial: asset.serial,
-          value: asset.value
+          value: asset.value,
+          imageUrl: asset.imageUrl || ''
         };
+      }
+
+      function nextAssetId() {
+        var max = 0;
+        $scope.assets.forEach(function (a) {
+          var parts = a.id.split('-');
+          var num = parseInt(parts[parts.length - 1], 10);
+          if (!isNaN(num) && num > max) max = num;
+        });
+        return 'AST-' + String(max + 1).padStart(3, '0');
+      }
+
+      function readImageFile(input, callback) {
+        if (!input.files || !input.files[0]) return;
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          $scope.$apply(function () { callback(e.target.result); });
+        };
+        reader.readAsDataURL(input.files[0]);
+        input.value = '';
       }
 
       function copyWarranty(asset) {
@@ -87,6 +129,63 @@
 
       $scope.formatValue = function (v) {
         return '₹' + v.toLocaleString('en-IN');
+      };
+
+      $scope.getCategoryIcon = function (category) {
+        return categoryIcons[category] || '📦';
+      };
+
+      $scope.openAddAsset = function () {
+        $scope.modal.open = true;
+        $scope.modal.mode = 'add';
+        $scope.modal.form = emptyAssetForm();
+      };
+
+      $scope.onImageSelected = function (input) {
+        readImageFile(input, function (dataUrl) {
+          $scope.modal.form.imageUrl = dataUrl;
+        });
+      };
+
+      $scope.onEditImageSelected = function (input) {
+        readImageFile(input, function (dataUrl) {
+          $scope.modal.form.imageUrl = dataUrl;
+        });
+      };
+
+      $scope.clearImage = function () {
+        $scope.modal.form.imageUrl = '';
+      };
+
+      $scope.canAddAsset = function () {
+        var f = $scope.modal.form;
+        return f && f.name && f.brand && f.serial && f.category && f.location && f.status && f.value >= 0;
+      };
+
+      $scope.addAsset = function () {
+        if (!$scope.canAddAsset()) return;
+        var f = $scope.modal.form;
+        var asset = {
+          id: nextAssetId(),
+          name: f.name,
+          brand: f.brand,
+          model: f.model || '',
+          serial: f.serial,
+          category: f.category,
+          location: f.location,
+          status: f.status,
+          value: Number(f.value) || 0,
+          assignedTo: '—',
+          imageUrl: f.imageUrl || '',
+          warranty: {},
+          serviceHistory: []
+        };
+        $scope.assets.unshift(asset);
+        if ($scope.categories.indexOf(asset.category) === -1) {
+          $scope.categories.push(asset.category);
+        }
+        $scope.filter();
+        $scope.closeModal();
       };
 
       $scope.viewAsset = function (asset) {
@@ -148,9 +247,11 @@
         var f = $scope.modal.form;
         asset.name = f.name;
         asset.brand = f.brand;
+        asset.model = f.model;
         asset.location = f.location;
         asset.status = f.status;
         asset.assignedTo = f.assignedTo;
+        asset.imageUrl = f.imageUrl || '';
         $scope.filter();
       };
 
